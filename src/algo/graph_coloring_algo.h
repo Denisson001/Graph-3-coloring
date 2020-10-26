@@ -7,6 +7,6 @@
 
 class Graph3ColoringAlgo {
 public:
-  virtual Coloring GetColoring(Graph graph) = 0;
+  virtual Coloring GetColoring(const Graph& graph) = 0;
   virtual ~Graph3ColoringAlgo() {}
 };

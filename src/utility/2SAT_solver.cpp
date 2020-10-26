@@ -1,4 +1,4 @@
-#include "two_SAT_solver.h"
+#include "2SAT_solver.h"
 
 TwoCNFFormula::TwoCNFFormula(size_t variable_count)
     : variable_count_(variable_count) {}

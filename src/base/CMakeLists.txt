@@ -1,4 +1,5 @@
-add_library(base
-    graph.cpp
-    graph.h
+set (
+  BASE_SRC
+    base/graph.cpp
+  PARENT_SCOPE
 )

@@ -2,7 +2,7 @@
 
 #include "graph_coloring_algo.h"
 
-#include <utility/two_SAT_solver.h>
+#include <utility/2SAT_solver.h>
 
 #include <optional>
 
@@ -11,7 +11,7 @@ public:
   using AvailableColors = std::vector<Color>;
 
 public:
-  Coloring GetColoring(Graph graph);
+  Coloring GetColoring(const Graph& graph);
 
 private:
   std::optional<Coloring> DoIteration(const Graph& graph);

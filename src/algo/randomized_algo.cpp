@@ -1,6 +1,6 @@
 #include "randomized_algo.h"
 
-Coloring Randomized3ColoringAlgo::GetColoring(Graph graph) {
+Coloring Randomized3ColoringAlgo::GetColoring(const Graph& graph) {
   for (size_t iter_num = 0; ; ++iter_num) {
     const auto coloring = DoIteration(graph);
     if (coloring.has_value()) {

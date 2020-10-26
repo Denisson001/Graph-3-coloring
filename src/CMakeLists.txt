@@ -10,11 +10,12 @@ link_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(algo)
 add_subdirectory(base)
+add_subdirectory(benchmark)
 add_subdirectory(utility)
 
 add_executable(${PROJECT_NAME}
-    main.cpp
+  ${ALGO_SRC}
+  ${BASE_SRC}
+  ${UTILITY_SRC}
+  ${BENCHMARK_SRC}
 )
-
-target_link_libraries(${PROJECT_NAME} PUBLIC utility)
-target_link_libraries(${PROJECT_NAME} PUBLIC algo)

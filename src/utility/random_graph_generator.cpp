@@ -15,7 +15,6 @@ Graph RandomGraphGenerator::Generate3ColoringGraph(size_t vertex_count) {
   return graph;
 }
 
-
 Coloring RandomGraphGenerator::Generate3Coloring(size_t vertex_count) {
   Coloring coloring;
   for (Vertex index = 0; index < vertex_count; ++index) {
