@@ -5,7 +5,7 @@
 
 class RandomGraphGenerator {
 public:
-  Graph Generate3ColoringGraph(size_t vertex_count);
+  UndirectedGraph Generate3ColoringGraph(size_t vertex_count);
 
 private:
   Coloring Generate3Coloring(size_t vertex_count);

@@ -1,7 +1,7 @@
 #include "random_graph_generator.h"
 
-Graph RandomGraphGenerator::Generate3ColoringGraph(size_t vertex_count) {
-  Graph graph{vertex_count};
+UndirectedGraph RandomGraphGenerator::Generate3ColoringGraph(size_t vertex_count) {
+  UndirectedGraph graph{vertex_count};
   const auto coloring = Generate3Coloring(vertex_count);
   for (Vertex u = 0; u < vertex_count; ++u) {
     for (Vertex v = u + 1; v < vertex_count; ++v) {

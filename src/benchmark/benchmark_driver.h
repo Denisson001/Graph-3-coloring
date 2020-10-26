@@ -8,7 +8,7 @@
 class BenchmarkDriver {
 public:
   void RunBenchmark(const std::string& benchmark_name);
-  void RunRandomizedAlgoBench();
+  void RunRandomizedAlgoBenchmark();
 
 private:
   RandomGraphGenerator graph_generator_;

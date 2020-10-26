@@ -10,12 +10,30 @@ using Edges = std::vector<Edge>;
 class Graph {
 public:
   explicit Graph(size_t vertex_count);
-  void AddEdge(Edge edge);
+  virtual ~Graph() {}
+
+  virtual void AddEdge(Edge edge) = 0;
 
   size_t GetVertexCount() const;
   const Edges& GetEdges() const;
+  const std::vector<Vertex>& GetAdjacentVertices(Vertex vertex) const;
 
-private:
+protected:
   size_t vertex_count_;
   Edges edges_;
+  std::vector<std::vector<Vertex>> adjacent_vertices_;
+};
+
+
+class DirectedGraph : public Graph {
+public:
+  DirectedGraph(size_t vertex_count);
+  void AddEdge(Edge edge);
+};
+
+
+class UndirectedGraph : public Graph {
+public:
+  UndirectedGraph(size_t vertex_count);
+  void AddEdge(Edge edge);
 };
