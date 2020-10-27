@@ -1,5 +1,8 @@
 #include "random_graph_generator.h"
 
+RandomGraphGenerator::RandomGraphGenerator()
+    : random_engine_("RandomGraphGenerator") {}
+
 UndirectedGraph RandomGraphGenerator::Generate3ColoringGraph(size_t vertex_count) {
   UndirectedGraph graph{vertex_count};
   const auto coloring = Generate3Coloring(vertex_count);
@@ -7,7 +10,7 @@ UndirectedGraph RandomGraphGenerator::Generate3ColoringGraph(size_t vertex_count
     for (Vertex v = u + 1; v < vertex_count; ++v) {
       static const double coin_probability = 0.7;
       if (coloring[u] != coloring[v] &&
-          FlipCoin(coin_probability)) {
+          random_engine_.FlipCoin(coin_probability)) {
         graph.AddEdge({u, v});
       }
     }
@@ -18,11 +21,7 @@ UndirectedGraph RandomGraphGenerator::Generate3ColoringGraph(size_t vertex_count
 Coloring RandomGraphGenerator::Generate3Coloring(size_t vertex_count) {
   Coloring coloring;
   for (Vertex index = 0; index < vertex_count; ++index) {
-    coloring.push_back(rand() % 3 + 1); // !!!!!!!!!!!!!!!!!!!!11
+    coloring.push_back(random_engine_.GenerateRandomValue(1, 3));
   }
   return coloring;
-}
-
-bool RandomGraphGenerator::FlipCoin(double coin_probability) {
-  return rand() % 100 < 100 * coin_probability;
 }

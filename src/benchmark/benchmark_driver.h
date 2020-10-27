@@ -1,12 +1,15 @@
 #pragma once
 
-#include <utility/random_graph_generator.h>
-#include <utility/graph_coloring_checker.h>
+#include <math_utility/random_graph_generator.h>
+#include <math_utility/graph_coloring_checker.h>
+#include <utility/loggable_component.h>
 
 #include <string>
 
-class BenchmarkDriver {
+class BenchmarkDriver : private LoggableComponent {
 public:
+  BenchmarkDriver();
+
   void RunBenchmark(const std::string& benchmark_name);
   void RunRandomizedAlgoBenchmark();
 

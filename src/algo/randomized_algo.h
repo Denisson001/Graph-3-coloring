@@ -2,28 +2,36 @@
 
 #include "graph_coloring_algo.h"
 
-#include <utility/2SAT_solver.h>
+#include <math_utility/2SAT_solver.h>
+#include <utility/random_values_generator.h>
 
 #include <optional>
 
 class Randomized3ColoringAlgo : public Graph3ColoringAlgo {
-public:
   using AvailableColors = std::vector<Color>;
 
 public:
+  Randomized3ColoringAlgo();
+
   Coloring GetColoring(const Graph& graph);
+
+  size_t GetLastRunIterationCount() const;
 
 private:
   std::optional<Coloring> DoIteration(const Graph& graph);
 
-  std::vector<AvailableColors> GetRandomAvailableColors(size_t vertex_count) const;
+  std::vector<AvailableColors> GetRandomAvailableColors(size_t vertex_count);
 
-  TwoCNFFormula MakeTwoCNFFormula(const Graph& graph, const std::vector<AvailableColors>& available_colors) const;
+  TwoCNFFormula MakeTwoCNFFormula(
+      const Graph& graph,
+      const std::vector<AvailableColors>& available_colors) const;
 
   Coloring GetColoringFromSatisfyingAssignment(
       const std::vector<AvailableColors>& available_colors,
       const SatisfyingAssignment& satisfying_assignment) const;
 
 private:
-  TwoSATSolver two_SAT_solver_;
+  TwoSATSolver twoSAT_solver_;
+  RandomValuesGenerator random_engine_;
+  size_t iteration_count_;
 };

@@ -1,7 +1,7 @@
 set (
   UTILITY_SRC
-    utility/2SAT_solver.cpp
-    utility/graph_coloring_checker.cpp
-    utility/random_graph_generator.cpp
+    utility/csv_writer.cpp
+    utility/loggable_component.cpp
+    utility/random_values_generator.cpp
   PARENT_SCOPE
 )

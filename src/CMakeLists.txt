@@ -11,11 +11,13 @@ link_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(algo)
 add_subdirectory(base)
 add_subdirectory(benchmark)
+add_subdirectory(math_utility)
 add_subdirectory(utility)
 
 add_executable(${PROJECT_NAME}
   ${ALGO_SRC}
   ${BASE_SRC}
-  ${UTILITY_SRC}
   ${BENCHMARK_SRC}
+  ${MATH_UTILITY_SRC}
+  ${UTILITY_SRC}
 )
