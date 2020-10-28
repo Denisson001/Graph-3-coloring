@@ -1,4 +1,4 @@
-#include "randomized_algo.h"
+#include "randomized_3coloring_algo.h"
 
 Randomized3ColoringAlgo::Randomized3ColoringAlgo()
     : random_engine_("Randomized3ColoringAlgo") {}
@@ -7,7 +7,7 @@ size_t Randomized3ColoringAlgo::GetLastRunIterationCount() const {
   return iteration_count_;
 }
 
-Coloring Randomized3ColoringAlgo::GetColoring(const Graph& graph) {
+Coloring Randomized3ColoringAlgo::GetColoring(const UndirectedGraph& graph) {
   for (iteration_count_ = 1; ; ++iteration_count_) {
     const auto coloring = DoIteration(graph);
     if (coloring.has_value()) {
@@ -16,7 +16,7 @@ Coloring Randomized3ColoringAlgo::GetColoring(const Graph& graph) {
   }
 }
 
-std::optional<Coloring> Randomized3ColoringAlgo::DoIteration(const Graph& graph) {
+std::optional<Coloring> Randomized3ColoringAlgo::DoIteration(const UndirectedGraph& graph) {
   const auto available_colors = GetRandomAvailableColors(graph.GetVertexCount());
   const auto two_cnf_formula = MakeTwoCNFFormula(graph, available_colors);
   const auto satisfying_assignment = twoSAT_solver_.GetSatisfyingAssignment(std::move(two_cnf_formula));
@@ -27,7 +27,7 @@ std::optional<Coloring> Randomized3ColoringAlgo::DoIteration(const Graph& graph)
 }
 
 TwoCNFFormula Randomized3ColoringAlgo::MakeTwoCNFFormula(
-    const Graph& graph,
+    const UndirectedGraph& graph,
     const std::vector<AvailableColors>& available_colors) const
 {
   TwoCNFFormula formula{graph.GetVertexCount()};

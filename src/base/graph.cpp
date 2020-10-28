@@ -16,6 +16,7 @@ const std::vector<Vertex>& Graph::GetAdjacentVertices(Vertex vertex) const {
   return adjacent_vertices_[vertex];
 }
 
+
 DirectedGraph::DirectedGraph(size_t vertex_count)
     : Graph(vertex_count) {}
 

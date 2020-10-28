@@ -13,17 +13,17 @@ class Randomized3ColoringAlgo : public Graph3ColoringAlgo {
 public:
   Randomized3ColoringAlgo();
 
-  Coloring GetColoring(const Graph& graph);
+  Coloring GetColoring(const UndirectedGraph& graph);
 
   size_t GetLastRunIterationCount() const;
 
 private:
-  std::optional<Coloring> DoIteration(const Graph& graph);
+  std::optional<Coloring> DoIteration(const UndirectedGraph& graph);
 
   std::vector<AvailableColors> GetRandomAvailableColors(size_t vertex_count);
 
   TwoCNFFormula MakeTwoCNFFormula(
-      const Graph& graph,
+      const UndirectedGraph& graph,
       const std::vector<AvailableColors>& available_colors) const;
 
   Coloring GetColoringFromSatisfyingAssignment(

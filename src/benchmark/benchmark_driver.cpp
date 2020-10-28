@@ -1,6 +1,6 @@
 #include "benchmark_driver.h"
 
-#include <algo/randomized_algo.h>
+#include <algo/randomized_3coloring_algo.h>
 #include <utility/csv_writer.h>
 
 #include <functional>
