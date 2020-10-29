@@ -11,7 +11,8 @@ public:
   BenchmarkDriver();
 
   void RunBenchmark(const std::string& benchmark_name);
-  void RunRandomizedAlgoBenchmark();
+  void RunRandomized3ColoringAlgoBenchmark();
+  void RunRandomizedCSPSolverBenchmark();
 
 private:
   RandomGraphGenerator graph_generator_;

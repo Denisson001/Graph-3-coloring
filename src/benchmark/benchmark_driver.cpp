@@ -1,6 +1,7 @@
 #include "benchmark_driver.h"
 
 #include <algo/randomized_3coloring_algo.h>
+#include <algo/randomized_CSP_solver.h>
 #include <utility/csv_writer.h>
 
 #include <functional>
@@ -12,14 +13,15 @@ BenchmarkDriver::BenchmarkDriver()
 void BenchmarkDriver::RunBenchmark(const std::string& benchmark_name) {
   static std::unordered_map<std::string, std::function<void()>> benchmarks;
 #define addBenchmark(bench_name) benchmarks[#bench_name] = std::bind(&BenchmarkDriver::Run##bench_name, this);
-  addBenchmark(RandomizedAlgoBenchmark);
+  addBenchmark(Randomized3ColoringAlgoBenchmark);
+  addBenchmark(RandomizedCSPSolverBenchmark);
 #undef addBenchmark
   PrintLogMessage("Start " + benchmark_name);
   benchmarks.at(benchmark_name)();
   PrintLogMessage(benchmark_name + " finished");
 }
 
-void BenchmarkDriver::RunRandomizedAlgoBenchmark() {
+void BenchmarkDriver::RunRandomized3ColoringAlgoBenchmark() {
   Randomized3ColoringAlgo algo;
   CSVWriter csv_writer{"RandomizedAlgoBenchmark"};
   for (size_t iter = 1; iter <= 1; ++iter) {
@@ -34,4 +36,8 @@ void BenchmarkDriver::RunRandomizedAlgoBenchmark() {
     }
     csv_writer.FlushValues();
   }
+}
+
+void BenchmarkDriver::RunRandomizedCSPSolverBenchmark() {
+
 }
