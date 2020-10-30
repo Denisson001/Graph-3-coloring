@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <set>
 #include <stdexcept>
 #include <vector>
@@ -16,7 +17,7 @@ public:
   Value value;
 };
 
-using Constraint = std::set<VariableConstraint>;
+using Constraint = std::vector<VariableConstraint>;
 using Constraints = std::set<Constraint>;
 using CSPSolution = std::vector<size_t>;
 
@@ -48,12 +49,18 @@ private:
   Constraints constraints_;
 };
 
+class CSPSolutionConverter {
+public:
+  CSPSolution Convert(CSPSolution solution) const;
+};
+
 
 template <size_t TValueCount, size_t TConstraintSize>
 void CSP<TValueCount, TConstraintSize>::AddConstraint(Constraint constraint) {
   if (constraint.size() != TConstraintSize) {
     throw std::logic_error("Wrong constraint size");
   }
+  std::sort(constraint.begin(), constraint.end());
   constraints_.insert(std::move(constraint));
 }
 
@@ -116,7 +123,8 @@ bool CSP<TValueCount, TConstraintSize>::ConstraintContainsVariable(
     Variable variable) const
 {
   for (Value value = 1; value <= TValueCount; ++value) {
-    if (constraint.find(VariableConstraint{variable, value}) != constraint.end()) {
+    const auto iter = std::find(constraint.begin(), constraint.end(), VariableConstraint{variable, value});
+    if (iter != constraint.end()) {
       return true;
     }
   }

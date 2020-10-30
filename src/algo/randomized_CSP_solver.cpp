@@ -39,6 +39,18 @@ std::optional<CSPSolution> RandomizedCSPSolver::TryToSolveSCP(const CSP<3, 2>& c
   }
   const size_t constraint_index =
       random_engine_.GenerateRandomValue(0, csp.GetConstraints().size() - 1);
+  const auto first_var_constraint = csp.GetConstraints()[constraint_index][0];
+  const auto second_var_constraint = csp.GetConstraints()[constraint_index][1];
+  ReassignValuesToVariable(
+      csp,
+      second_var_constraint.variable,
+      second_var_constraint.value,
+      first_var_constraint.value);
+  const auto forbidden_values = ForbidRandomVariablesValues(
+      csp,
+      first_var_constraint.variable,
+      second_var_constraint.variable,
+      first_var_constraint.value);
 
 }
 
@@ -66,8 +78,25 @@ std::optional<CSPSolution> RandomizedCSPSolver::SolveSCPUsingBruteforce(
   return {};
 }
 
-void RandomizedCSPSolver::AddRandomExtraConstraints(CSP<3, 2>& csp) {
+void RandomizedCSPSolver::ReassignValuesToVariable(
+    CSP<3, 2>& csp,
+    Variable variable,
+    Value prev_value,
+    Value new_value) const
+{
   // TODO
+}
+
+
+std::pair<Value, Value> RandomizedCSPSolver::ForbidRandomVariablesValues(
+    CSP<3, 2>& csp,
+    Variable var1,
+    Variable var2,
+    Value common_value) const
+{
+  // TODO
+  /// csp.ForbidValueForVariable(var1, value1);
+  /// csp.ForbidValueForVariable(var2, value2);
 }
 
 std::pair<size_t, size_t> RandomizedCSPSolver::GetRemainingAvailableValues(size_t value) const {

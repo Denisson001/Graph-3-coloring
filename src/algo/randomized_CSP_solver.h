@@ -20,7 +20,16 @@ private:
   std::optional<CSPSolution> SolveSCPUsingBruteforce(
       const CSP<TColorCount, TConstraintSize>& csp) const;
 
-  void AddRandomExtraConstraints(CSP<3, 2>& csp);
+  void ReassignValuesToVariable(
+      CSP<3, 2>& csp,
+      Variable variable,
+      Value prev_value,
+      Value new_value) const;
+  std::pair<Value, Value> ForbidRandomVariablesValues(
+      CSP<3, 2>& csp,
+      Variable var1,
+      Variable var2,
+      Value common_value) const;
 
   CSP<3, 2> Convert3SATToCSP(const UndirectedGraph& graph) const;
 
