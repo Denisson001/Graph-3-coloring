@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
 #include <set>
 #include <stdexcept>
 #include <vector>
@@ -11,6 +12,7 @@ using Value = size_t;
 struct VariableConstraint {
 public:
   bool operator<(const VariableConstraint& other_constraint) const;
+  bool operator==(const VariableConstraint& other_constraint) const;
 
 public:
   Variable variable;
@@ -24,16 +26,18 @@ using CSPSolution = std::vector<size_t>;
 template <size_t TValueCount, size_t TConstraintSize>
 class CSP {
 public:
-  explicit CSP(size_t variable_count)
-      : variable_count_(variable_count) {}
+  using Variables = std::set<Variable>;
+
+public:
+  explicit CSP(size_t variable_count);
 
   void AddConstraint(Constraint constraint);
   const Constraints& GetConstraints() const;
   Constraints GetConstraintsContain(Variable variable) const;
+  const Variables& GetActiveVariables() const;
+  size_t GetVariableCount() const;
 
   void RemoveConstraints(const Constraints& constraints);
-
-  size_t GetVariableCount() const;
 
   void ForbidValueForVariable(Variable variable, Value value);
 
@@ -45,15 +49,33 @@ private:
       Variable variable) const;
 
 private:
-  size_t variable_count_;
+  Variables active_variables_;
   Constraints constraints_;
+  size_t variable_count_;
 };
 
 class CSPSolutionConverter {
 public:
-  CSPSolution Convert(CSPSolution solution) const;
+  using VariableValueConverter = std::function<Value(Variable, const CSPSolution&)>;
+
+public:
+  explicit CSPSolutionConverter(VariableValueConverter variable_value_converter);
+
+  CSPSolution Convert(CSPSolution&& solution) const;
+
+private:
+  VariableValueConverter variable_value_converter_;
 };
 
+
+template <size_t TValueCount, size_t TConstraintSize>
+CSP<TValueCount, TConstraintSize>::CSP(size_t variable_count)
+    : variable_count_(variable_count)
+{
+  for (Variable var = 0; var < variable_count; ++var) {
+    active_variables_.insert(var);
+  }
+}
 
 template <size_t TValueCount, size_t TConstraintSize>
 void CSP<TValueCount, TConstraintSize>::AddConstraint(Constraint constraint) {
@@ -86,6 +108,13 @@ void CSP<TValueCount, TConstraintSize>::RemoveConstraints(const Constraints& con
     constraints_.erase(constraint);
   }
 }
+
+template <size_t TValueCount, size_t TConstraintSize>
+const typename CSP<TValueCount, TConstraintSize>::Variables&
+CSP<TValueCount, TConstraintSize>::GetActiveVariables() const {
+  return active_variables_;
+}
+
 
 template <size_t TValueCount, size_t TConstraintSize>
 size_t CSP<TValueCount, TConstraintSize>::GetVariableCount() const {

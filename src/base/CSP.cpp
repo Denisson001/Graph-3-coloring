@@ -5,6 +5,11 @@ bool VariableConstraint::operator<(const VariableConstraint& other_constraint) c
       std::make_pair(other_constraint.value, other_constraint.value);
 }
 
+bool VariableConstraint::operator==(const VariableConstraint& other_constraint) const {
+  return variable == other_constraint.variable &&
+         value == other_constraint.value;
+}
+
 template<>
 void CSP<3, 2>::ForbidValueForVariable(Variable variable, Value value) {
   for (Variable other_var = 0; other_var < variable_count_; ++other_var) {
@@ -15,4 +20,14 @@ void CSP<3, 2>::ForbidValueForVariable(Variable variable, Value value) {
       });
     }
   }
+}
+
+CSPSolutionConverter::CSPSolutionConverter(VariableValueConverter variable_value_converter)
+    : variable_value_converter_(variable_value_converter) {}
+
+CSPSolution CSPSolutionConverter::Convert(CSPSolution&& solution) const {
+  for (Variable var = 0; var < solution.size(); ++var) {
+    solution[var] = variable_value_converter_(var, solution);
+  }
+  return solution;
 }
