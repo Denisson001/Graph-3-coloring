@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <deque>
 #include <functional>
 #include <set>
 #include <stdexcept>
@@ -23,37 +24,6 @@ using Constraint = std::vector<VariableConstraint>;
 using Constraints = std::set<Constraint>;
 using CSPSolution = std::vector<size_t>;
 
-template <size_t TValueCount, size_t TConstraintSize>
-class CSP {
-public:
-  using Variables = std::set<Variable>;
-
-public:
-  explicit CSP(size_t variable_count);
-
-  void AddConstraint(Constraint constraint);
-  const Constraints& GetConstraints() const;
-  Constraints GetConstraintsContain(Variable variable) const;
-  const Variables& GetActiveVariables() const;
-  size_t GetVariableCount() const;
-
-  void RemoveConstraints(const Constraints& constraints);
-
-  void ForbidValueForVariable(Variable variable, Value value);
-
-  bool CheckSolution(const CSPSolution& solution) const;
-
-private:
-  bool ConstraintContainsVariable(
-      const Constraint& constraint,
-      Variable variable) const;
-
-private:
-  Variables active_variables_;
-  Constraints constraints_;
-  size_t variable_count_;
-};
-
 class CSPSolutionConverter {
 public:
   using VariableValueConverter = std::function<Value(Variable, const CSPSolution&)>;
@@ -65,6 +35,58 @@ public:
 
 private:
   VariableValueConverter variable_value_converter_;
+};
+
+class CSPSolutionConverters {
+public:
+  void AddSolutionConverter(CSPSolutionConverter solution_converter);
+  CSPSolution Convert(CSPSolution&& solution) const;
+
+private:
+  std::deque<CSPSolutionConverter> solution_converters_;
+};
+
+template <size_t TValueCount, size_t TConstraintSize>
+class CSP {
+public:
+  using Variables = std::set<Variable>;
+
+public:
+  explicit CSP(size_t variable_count);
+
+  void AddConstraint(Constraint constraint);
+  void AddConstraints(Constraints constraints);
+
+  void RemoveConstraints(const Constraints& constraints);
+
+  const Constraints& GetConstraints() const;
+  Constraints GetConstraintsContain(Variable variable) const;
+  Constraints GetConstraintsContain(VariableConstraint variable_constraint) const;
+
+  const Variables& GetActiveVariables() const;
+  size_t GetVariableCount() const;
+
+  void ForbidValueForVariable(Variable variable, Value value);
+
+  CSPSolutionConverter RemoveVariableWithTwoAvailableValues(
+      Variable removing_variable,
+      std::pair<Value, Value> available_values);
+
+  bool CheckSolution(const CSPSolution& solution) const;
+
+private:
+  bool ConstraintContainsVariable(
+      const Constraint& constraint,
+      Variable variable) const;
+
+  bool ConstraintContainsVariableConstraint(
+      const Constraint& constraint,
+      VariableConstraint variable_constraint) const;
+
+private:
+  Variables active_variables_;
+  Constraints constraints_;
+  size_t variable_count_;
 };
 
 
@@ -87,6 +109,14 @@ void CSP<TValueCount, TConstraintSize>::AddConstraint(Constraint constraint) {
 }
 
 template <size_t TValueCount, size_t TConstraintSize>
+void CSP<TValueCount, TConstraintSize>::AddConstraints(Constraints constraints) {
+  for (auto& constraint : constraints) {
+    AddConstraint(std::move(constraint));
+  }
+}
+
+
+template <size_t TValueCount, size_t TConstraintSize>
 const Constraints& CSP<TValueCount, TConstraintSize>::GetConstraints() const {
   return constraints_;
 }
@@ -96,6 +126,19 @@ Constraints CSP<TValueCount, TConstraintSize>::GetConstraintsContain(Variable va
   Constraints constraints;
   for (const auto& constraint : constraints_) {
     if (ConstraintContainsVariable(constraint, variable)) {
+      constraints.insert(constraint);
+    }
+  }
+  return constraints;
+}
+
+template <size_t TValueCount, size_t TConstraintSize>
+Constraints CSP<TValueCount, TConstraintSize>::GetConstraintsContain(
+    VariableConstraint variable_constraint) const
+{
+  Constraints constraints;
+  for (const auto& constraint : constraints_) {
+    if (ConstraintContainsVariableConstraint(constraint, variable_constraint)) {
       constraints.insert(constraint);
     }
   }
@@ -152,10 +195,18 @@ bool CSP<TValueCount, TConstraintSize>::ConstraintContainsVariable(
     Variable variable) const
 {
   for (Value value = 1; value <= TValueCount; ++value) {
-    const auto iter = std::find(constraint.begin(), constraint.end(), VariableConstraint{variable, value});
-    if (iter != constraint.end()) {
+    if (ConstraintContainsVariableConstraint(constraint, VariableConstraint{variable, value})) {
       return true;
     }
   }
   return false;
+}
+
+template <size_t TValueCount, size_t TConstraintSize>
+bool CSP<TValueCount, TConstraintSize>::ConstraintContainsVariableConstraint(
+    const Constraint& constraint,
+    VariableConstraint variable_constraint) const
+{
+  const auto iter = std::find(constraint.begin(), constraint.end(), variable_constraint);
+  return iter != constraint.end();
 }

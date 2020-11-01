@@ -15,7 +15,7 @@ class RandomizedCSPSolver : public Graph3ColoringAlgo {
   size_t GetLastRunIterationCount() const;
 
 private:
-  std::optional<CSPSolution> TryToSolveSCP(const CSP<3, 2>& csp);
+  std::optional<CSPSolution> TryToSolveSCP(CSP<3, 2>& csp);
   template <size_t TColorCount, size_t TConstraintSize>
   std::optional<CSPSolution> SolveSCPUsingBruteforce(
       const CSP<TColorCount, TConstraintSize>& csp) const;

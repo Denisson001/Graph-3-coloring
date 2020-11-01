@@ -10,7 +10,8 @@ size_t RandomizedCSPSolver::GetLastRunIterationCount() const {
 Coloring RandomizedCSPSolver::GetColoring(const UndirectedGraph& graph) {
   const auto csp = Convert3SATToCSP(graph);
   for (iteration_count_ = 1; ; ++iteration_count_) {
-    const auto csp_solution = TryToSolveSCP(csp);
+    auto csp_copy = csp;
+    const auto csp_solution = TryToSolveSCP(csp_copy);
     if (csp_solution.has_value()) {
       return static_cast<Coloring>(*csp_solution);
     }
@@ -30,28 +31,38 @@ CSP<3, 2> RandomizedCSPSolver::Convert3SATToCSP(const UndirectedGraph& graph) co
   return csp;
 }
 
-std::optional<CSPSolution> RandomizedCSPSolver::TryToSolveSCP(const CSP<3, 2>& csp) {
+std::optional<CSPSolution> RandomizedCSPSolver::TryToSolveSCP(CSP<3, 2>& csp) {
   if (csp.GetActiveVariables().size() <= 3) {
     return SolveSCPUsingBruteforce(csp);
   }
   if (csp.GetConstraints().size() == 0) {
     return CSPSolution(csp.GetVariableCount(), 1);
   }
-  const size_t constraint_index =
-      random_engine_.GenerateRandomValue(0, csp.GetConstraints().size() - 1);
-  /*const auto first_var_constraint = csp.GetConstraints()[constraint_index][0];
-  const auto second_var_constraint = csp.GetConstraints()[constraint_index][1];
-  const solution_converter = ReassignValuesToVariable(
+  const auto random_constraint = random_engine_.GetRandomValueFrom(csp.GetConstraints());
+  const auto first_var_constraint = random_constraint[0];
+  const auto second_var_constraint = random_constraint[1];
+  CSPSolutionConverters solution_converters;
+  solution_converters.AddSolutionConverter(ReassignValuesToVariable(
       csp,
       second_var_constraint.variable,
       second_var_constraint.value,
-      first_var_constraint.value);
+      first_var_constraint.value));
   const auto forbidden_values = ForbidRandomVariablesValues(
       csp,
       first_var_constraint.variable,
       second_var_constraint.variable,
-      first_var_constraint.value); */
-  // TODO
+      first_var_constraint.value);
+  solution_converters.AddSolutionConverter(csp.RemoveVariableWithTwoAvailableValues(
+      first_var_constraint.variable,
+      GetRemainingAvailableValues(forbidden_values.first)));
+  solution_converters.AddSolutionConverter(csp.RemoveVariableWithTwoAvailableValues(
+      second_var_constraint.variable,
+      GetRemainingAvailableValues(forbidden_values.second)));
+  auto solution = TryToSolveSCP(csp);
+  if (solution.has_value()) {
+    return solution_converters.Convert(std::move(*solution));
+  }
+  return {};
 }
 
 template <size_t TColorCount, size_t TConstraintSize>
@@ -98,14 +109,14 @@ CSPSolutionConverter RandomizedCSPSolver::ReassignValuesToVariable(
     }
     return c2;
   };
-  CSPSolutionConverter solution_converter(
-      [reassigning_variable, value_converter](Variable var, const CSPSolution& csp_solution) {
+  CSPSolutionConverter solution_converter{
+      [reassigning_variable, value_converter](Variable var, const CSPSolution &csp_solution) {
         if (var != reassigning_variable) {
           return csp_solution[var];
         }
         return value_converter(csp_solution[var]);
       }
-  );
+  };
   Constraints constraints = csp.GetConstraintsContain(reassigning_variable);
   csp.RemoveConstraints(constraints);
   for (auto constraint : constraints) {
@@ -118,7 +129,6 @@ CSPSolutionConverter RandomizedCSPSolver::ReassignValuesToVariable(
   }
   return solution_converter;
 }
-
 
 std::pair<Value, Value> RandomizedCSPSolver::ForbidRandomVariablesValues(
     CSP<3, 2>& csp,
