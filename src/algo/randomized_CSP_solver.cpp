@@ -42,22 +42,32 @@ std::optional<CSPSolution> RandomizedCSPSolver::TryToSolveSCP(CSP<3, 2>& csp) {
   const auto first_var_constraint = random_constraint[0];
   const auto second_var_constraint = random_constraint[1];
   CSPSolutionConverters solution_converters;
-  solution_converters.AddSolutionConverter(ReassignValuesToVariable(
-      csp,
-      second_var_constraint.variable,
-      second_var_constraint.value,
-      first_var_constraint.value));
-  const auto forbidden_values = ForbidRandomVariablesValues(
-      csp,
-      first_var_constraint.variable,
-      second_var_constraint.variable,
-      first_var_constraint.value);
-  solution_converters.AddSolutionConverter(csp.RemoveVariableWithTwoAvailableValues(
-      first_var_constraint.variable,
-      GetRemainingAvailableValues(forbidden_values.first)));
-  solution_converters.AddSolutionConverter(csp.RemoveVariableWithTwoAvailableValues(
-      second_var_constraint.variable,
-      GetRemainingAvailableValues(forbidden_values.second)));
+  if (first_var_constraint.variable == second_var_constraint.variable) {
+    if (first_var_constraint.value != second_var_constraint.value) {
+      csp.RemoveConstraints(Constraints{random_constraint});
+      return TryToSolveSCP(csp);
+    }
+    solution_converters.AddSolutionConverter(csp.RemoveVariableWithTwoAvailableValues(
+        first_var_constraint.variable,
+        GetRemainingAvailableValues(first_var_constraint.value)));
+  } else {
+    solution_converters.AddSolutionConverter(ReassignValuesToVariable(
+        csp,
+        second_var_constraint.variable,
+        second_var_constraint.value,
+        first_var_constraint.value));
+    const auto forbidden_values = ForbidRandomVariablesValues(
+        csp,
+        first_var_constraint.variable,
+        second_var_constraint.variable,
+        first_var_constraint.value);
+    solution_converters.AddSolutionConverter(csp.RemoveVariableWithTwoAvailableValues(
+        first_var_constraint.variable,
+        GetRemainingAvailableValues(forbidden_values.first)));
+    solution_converters.AddSolutionConverter(csp.RemoveVariableWithTwoAvailableValues(
+        second_var_constraint.variable,
+        GetRemainingAvailableValues(forbidden_values.second)));
+  }
   auto solution = TryToSolveSCP(csp);
   if (solution.has_value()) {
     return solution_converters.Convert(std::move(*solution));

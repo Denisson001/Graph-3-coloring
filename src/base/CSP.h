@@ -165,6 +165,11 @@ size_t CSP<TValueCount, TConstraintSize>::GetVariableCount() const {
 }
 
 template <size_t TValueCount, size_t TConstraintSize>
+void CSP<TValueCount, TConstraintSize>::ForbidValueForVariable(Variable variable, Value value) {
+  AddConstraint(Constraint(TConstraintSize, VariableConstraint{variable, value}));
+}
+
+template <size_t TValueCount, size_t TConstraintSize>
 bool CSP<TValueCount, TConstraintSize>::CheckSolution(const CSPSolution& solution) const {
   if (solution.size() != variable_count_) {
     return false;

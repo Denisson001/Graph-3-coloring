@@ -24,7 +24,7 @@ void BenchmarkDriver::RunBenchmark(const std::string& benchmark_name) {
 void BenchmarkDriver::RunRandomized3ColoringAlgoBenchmark() {
   Randomized3ColoringAlgo algo;
   CSVWriter csv_writer{"RandomizedAlgoBenchmark"};
-  for (size_t iter = 1; iter <= 1; ++iter) {
+  for (size_t iter = 1; iter <= 30; ++iter) {
     PrintLogMessage("Start iteration " + std::to_string(iter) + "/30");
     for (size_t vertex_count = 1; vertex_count <= 30; ++vertex_count) {
       const auto graph = graph_generator_.Generate3ColoringGraph(vertex_count);
@@ -38,6 +38,27 @@ void BenchmarkDriver::RunRandomized3ColoringAlgoBenchmark() {
   }
 }
 
-void BenchmarkDriver::RunRandomizedCSPSolverBenchmark() {
+#include <iostream>
 
+void BenchmarkDriver::RunRandomizedCSPSolverBenchmark() {
+  RandomizedCSPSolver algo;
+  CSVWriter csv_writer{"RandomizedCSPSolverBenchmark"};
+  for (size_t iter = 1; iter <= 1; ++iter) {
+    PrintLogMessage("Start iteration " + std::to_string(iter) + "/30");
+    for (size_t vertex_count = 4; vertex_count <= 4; ++vertex_count) {
+      const auto graph = graph_generator_.Generate3ColoringGraph(vertex_count);
+
+
+      for (const auto& [a, b] : graph.GetEdges()) {
+        std::cout << a << ' ' << b << std::endl;
+      }
+
+      const auto coloring = algo.GetColoring(graph);
+      if (!coloring_checker_.CheckColoring(graph, coloring)) {
+        throw std::logic_error("Wrong coloring");
+      }
+      csv_writer.AddValue(std::to_string(algo.GetLastRunIterationCount()));
+    }
+    csv_writer.FlushValues();
+  }
 }

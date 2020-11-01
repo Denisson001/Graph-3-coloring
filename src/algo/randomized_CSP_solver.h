@@ -8,6 +8,7 @@
 #include <optional>
 
 class RandomizedCSPSolver : public Graph3ColoringAlgo {
+public:
   RandomizedCSPSolver();
 
   Coloring GetColoring(const UndirectedGraph& graph);
