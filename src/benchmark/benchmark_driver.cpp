@@ -38,21 +38,13 @@ void BenchmarkDriver::RunRandomized3ColoringAlgoBenchmark() {
   }
 }
 
-#include <iostream>
-
 void BenchmarkDriver::RunRandomizedCSPSolverBenchmark() {
   RandomizedCSPSolver algo;
   CSVWriter csv_writer{"RandomizedCSPSolverBenchmark"};
   for (size_t iter = 1; iter <= 1; ++iter) {
     PrintLogMessage("Start iteration " + std::to_string(iter) + "/30");
-    for (size_t vertex_count = 4; vertex_count <= 4; ++vertex_count) {
+    for (size_t vertex_count = 1; vertex_count <= 80; ++vertex_count) {
       const auto graph = graph_generator_.Generate3ColoringGraph(vertex_count);
-
-
-      for (const auto& [a, b] : graph.GetEdges()) {
-        std::cout << a << ' ' << b << std::endl;
-      }
-
       const auto coloring = algo.GetColoring(graph);
       if (!coloring_checker_.CheckColoring(graph, coloring)) {
         throw std::logic_error("Wrong coloring");

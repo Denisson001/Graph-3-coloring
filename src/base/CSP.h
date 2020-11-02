@@ -66,11 +66,18 @@ public:
   const Variables& GetActiveVariables() const;
   size_t GetVariableCount() const;
 
-  void ForbidValueForVariable(Variable variable, Value value);
+  void ForbidVariableValue(Variable variable, Value value);
 
+  CSPSolutionConverter ApplyEquivalentTransformTo(Variable removing_variable);
+  CSPSolutionConverter RemoveVariableWithOneAvailableValue(
+      Variable removing_variable,
+      Value available_value);
   CSPSolutionConverter RemoveVariableWithTwoAvailableValues(
       Variable removing_variable,
       std::pair<Value, Value> available_values);
+
+  std::vector<Value> GetAvailableValuesOf(Variable variable) const;
+  bool AllVariablesHaveAvailableValue() const;
 
   bool CheckSolution(const CSPSolution& solution) const;
 
@@ -114,7 +121,6 @@ void CSP<TValueCount, TConstraintSize>::AddConstraints(Constraints constraints) 
     AddConstraint(std::move(constraint));
   }
 }
-
 
 template <size_t TValueCount, size_t TConstraintSize>
 const Constraints& CSP<TValueCount, TConstraintSize>::GetConstraints() const {
@@ -165,8 +171,37 @@ size_t CSP<TValueCount, TConstraintSize>::GetVariableCount() const {
 }
 
 template <size_t TValueCount, size_t TConstraintSize>
-void CSP<TValueCount, TConstraintSize>::ForbidValueForVariable(Variable variable, Value value) {
+void CSP<TValueCount, TConstraintSize>::ForbidVariableValue(Variable variable, Value value) {
   AddConstraint(Constraint(TConstraintSize, VariableConstraint{variable, value}));
+}
+
+
+template <size_t TValueCount, size_t TConstraintSize>
+std::vector<Value> CSP<TValueCount, TConstraintSize>::GetAvailableValuesOf(Variable variable) const {
+  std::vector<Value> available_values;
+  for (Value value = 1; value <= TValueCount; ++value) {
+    bool is_available = true;
+    for (const auto &constraint : constraints_) {
+      if (constraint == Constraint(TConstraintSize, VariableConstraint{variable, value})) {
+        is_available = false;
+        break;
+      }
+    }
+    if (is_available) {
+      available_values.push_back(value);
+    }
+  }
+  return available_values;
+}
+
+template <size_t TValueCount, size_t TConstraintSize>
+bool CSP<TValueCount, TConstraintSize>::AllVariablesHaveAvailableValue() const {
+  for (const auto var : active_variables_) {
+    if (GetAvailableValuesOf(var).empty()) {
+      return false;
+    }
+  }
+  return true;
 }
 
 template <size_t TValueCount, size_t TConstraintSize>

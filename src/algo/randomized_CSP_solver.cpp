@@ -32,24 +32,30 @@ CSP<3, 2> RandomizedCSPSolver::Convert3SATToCSP(const UndirectedGraph& graph) co
 }
 
 std::optional<CSPSolution> RandomizedCSPSolver::TryToSolveSCP(CSP<3, 2>& csp) {
+  if (!csp.AllVariablesHaveAvailableValue()) {
+    return {};
+  }
   if (csp.GetActiveVariables().size() <= 3) {
     return SolveSCPUsingBruteforce(csp);
   }
-  if (csp.GetConstraints().size() == 0) {
+  if (csp.GetConstraints().empty()) {
     return CSPSolution(csp.GetVariableCount(), 1);
   }
   const auto random_constraint = random_engine_.GetRandomValueFrom(csp.GetConstraints());
   const auto first_var_constraint = random_constraint[0];
   const auto second_var_constraint = random_constraint[1];
   CSPSolutionConverters solution_converters;
-  if (first_var_constraint.variable == second_var_constraint.variable) {
-    if (first_var_constraint.value != second_var_constraint.value) {
+  if (first_var_constraint.variable == second_var_constraint.variable &&
+      first_var_constraint.value != second_var_constraint.value) {
       csp.RemoveConstraints(Constraints{random_constraint});
       return TryToSolveSCP(csp);
-    }
-    solution_converters.AddSolutionConverter(csp.RemoveVariableWithTwoAvailableValues(
-        first_var_constraint.variable,
-        GetRemainingAvailableValues(first_var_constraint.value)));
+  }
+  if (csp.GetAvailableValuesOf(first_var_constraint.variable).size() <= 2) {
+    solution_converters.AddSolutionConverter(csp.ApplyEquivalentTransformTo(
+        first_var_constraint.variable));
+  }  else if (csp.GetAvailableValuesOf(second_var_constraint.variable).size() <= 2) {
+    solution_converters.AddSolutionConverter(csp.ApplyEquivalentTransformTo(
+        second_var_constraint.variable));
   } else {
     solution_converters.AddSolutionConverter(ReassignValuesToVariable(
         csp,
@@ -61,12 +67,13 @@ std::optional<CSPSolution> RandomizedCSPSolver::TryToSolveSCP(CSP<3, 2>& csp) {
         first_var_constraint.variable,
         second_var_constraint.variable,
         first_var_constraint.value);
-    solution_converters.AddSolutionConverter(csp.RemoveVariableWithTwoAvailableValues(
-        first_var_constraint.variable,
-        GetRemainingAvailableValues(forbidden_values.first)));
-    solution_converters.AddSolutionConverter(csp.RemoveVariableWithTwoAvailableValues(
-        second_var_constraint.variable,
-        GetRemainingAvailableValues(forbidden_values.second)));
+    solution_converters.AddSolutionConverter(csp.ApplyEquivalentTransformTo(
+        first_var_constraint.variable));
+    if (!csp.AllVariablesHaveAvailableValue()) {
+      return {};
+    }
+    solution_converters.AddSolutionConverter(csp.ApplyEquivalentTransformTo(
+        second_var_constraint.variable));
   }
   auto solution = TryToSolveSCP(csp);
   if (solution.has_value()) {
@@ -82,6 +89,9 @@ std::optional<CSPSolution> RandomizedCSPSolver::SolveSCPUsingBruteforce(
   CSPSolution solution(csp.GetVariableCount(), 1);
   const auto& active_variables = csp.GetActiveVariables();
   while (true) {
+    if (csp.CheckSolution(solution)) {
+      return solution;
+    }
     size_t remaining_var_count = active_variables.size();
     for (const auto var : active_variables) {
       ++solution[var];
@@ -95,11 +105,7 @@ std::optional<CSPSolution> RandomizedCSPSolver::SolveSCPUsingBruteforce(
         break;
       }
     }
-    if (csp.CheckSolution(solution)) {
-      return solution;
-    }
   }
-  return {};
 }
 
 CSPSolutionConverter RandomizedCSPSolver::ReassignValuesToVariable(
@@ -119,12 +125,19 @@ CSPSolutionConverter RandomizedCSPSolver::ReassignValuesToVariable(
     }
     return c2;
   };
+  auto reversed_value_converter = [value_converter](Value value) {
+    for (Value possible_value = 1; possible_value <= 3; ++possible_value) {
+      if (value_converter(possible_value) == value) {
+        return possible_value;
+      }
+    }
+  };
   CSPSolutionConverter solution_converter{
-      [reassigning_variable, value_converter](Variable var, const CSPSolution &csp_solution) {
+      [reassigning_variable, reversed_value_converter](Variable var, const CSPSolution &csp_solution) {
         if (var != reassigning_variable) {
           return csp_solution[var];
         }
-        return value_converter(csp_solution[var]);
+        return reversed_value_converter(csp_solution[var]);
       }
   };
   Constraints constraints = csp.GetConstraintsContain(reassigning_variable);
@@ -156,8 +169,8 @@ std::pair<Value, Value> RandomizedCSPSolver::ForbidRandomVariablesValues(
   if (random_engine_.FlipCoin(0.5)) {
     std::swap(forbidden_values.first, forbidden_values.second);
   }
-  csp.ForbidValueForVariable(var1, forbidden_values.first);
-  csp.ForbidValueForVariable(var2, forbidden_values.second);
+  csp.ForbidVariableValue(var1, forbidden_values.first);
+  csp.ForbidVariableValue(var2, forbidden_values.second);
   return forbidden_values;
 }
 
