@@ -62,7 +62,7 @@ std::optional<CSPSolution> RandomizedCSPSolver::TryToSolveSCP(CSP<3, 2>& csp) {
         second_var_constraint.variable,
         second_var_constraint.value,
         first_var_constraint.value));
-    const auto forbidden_values = ForbidRandomVariablesValues(
+    ForbidRandomVariablesValues(
         csp,
         first_var_constraint.variable,
         second_var_constraint.variable,

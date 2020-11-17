@@ -8,7 +8,7 @@ class RandomGraphGenerator {
 public:
   RandomGraphGenerator();
 
-  UndirectedGraph Generate3ColoringGraph(size_t vertex_count);
+  UndirectedGraph Generate3ColoringGraph(size_t vertex_count, double coin_probability = 0.7);
 
 private:
   Coloring Generate3Coloring(size_t vertex_count);
