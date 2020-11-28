@@ -8,10 +8,12 @@
 #include <optional>
 
 class RandomizedCSPSolver : public Graph3ColoringAlgo {
-public:
-  RandomizedCSPSolver();
+  const static size_t kMaxIterationCount = 10000000;
 
-  Coloring GetColoring(const UndirectedGraph& graph);
+public:
+  RandomizedCSPSolver(size_t max_iteration_count = kMaxIterationCount);
+
+  std::optional<Coloring> GetColoring(const UndirectedGraph& graph);
 
   size_t GetLastRunIterationCount() const;
 
@@ -39,4 +41,5 @@ private:
 private:
   RandomValuesGenerator random_engine_;
   size_t iteration_count_;
+  size_t max_iteration_count_;
 };

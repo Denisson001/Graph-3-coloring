@@ -14,6 +14,6 @@ int32_t RandomValuesGenerator::GenerateRandomValue(int32_t low, int32_t high) {
 }
 
 bool RandomValuesGenerator::FlipCoin(float coin_probability) {
-  static const int32_t precision = 1000000;
+  static const int32_t precision = 10000000;
   return GenerateRandomValue(1, precision) <= coin_probability * precision;
 }

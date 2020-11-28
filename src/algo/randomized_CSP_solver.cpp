@@ -1,21 +1,23 @@
 #include "randomized_CSP_solver.h"
 
-RandomizedCSPSolver::RandomizedCSPSolver()
-    : random_engine_("RandomizedCSPSolver") {}
+RandomizedCSPSolver::RandomizedCSPSolver(size_t max_iteration_count)
+    : random_engine_("RandomizedCSPSolver"),
+      max_iteration_count_(max_iteration_count) {}
 
 size_t RandomizedCSPSolver::GetLastRunIterationCount() const {
   return iteration_count_;
 }
 
-Coloring RandomizedCSPSolver::GetColoring(const UndirectedGraph& graph) {
+std::optional<Coloring> RandomizedCSPSolver::GetColoring(const UndirectedGraph& graph) {
   const auto csp = Convert3SATToCSP(graph);
-  for (iteration_count_ = 1; ; ++iteration_count_) {
+  for (iteration_count_ = 1; iteration_count_ < max_iteration_count_; ++iteration_count_) {
     auto csp_copy = csp;
     const auto csp_solution = TryToSolveSCP(csp_copy);
     if (csp_solution.has_value()) {
       return static_cast<Coloring>(*csp_solution);
     }
   }
+  return {};
 }
 
 CSP<3, 2> RandomizedCSPSolver::Convert3SATToCSP(const UndirectedGraph& graph) const {

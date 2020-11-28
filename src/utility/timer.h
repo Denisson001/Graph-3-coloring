@@ -17,8 +17,10 @@ struct MeasurementResult {
 
 class Timer {
 public:
+  using Task = std::function<T()>;
+
   template<typename T>
-  MeasurementResult<T> MeasureElapsedTime(std::function<T()> task) const {
+  MeasurementResult<T> MeasureElapsedTime(Task task) const {
     const auto start = std::chrono::high_resolution_clock::now();
     MeasurementResult<T> measurement_result = task();
     const auto finish = std::chrono::high_resolution_clock::now();

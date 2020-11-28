@@ -9,11 +9,12 @@
 
 class Randomized3ColoringAlgo : public Graph3ColoringAlgo {
   using AvailableColors = std::vector<Color>;
+  const static size_t kMaxIterationCount = 10000000;
 
 public:
-  Randomized3ColoringAlgo();
+  Randomized3ColoringAlgo(size_t max_iteration_count = kMaxIterationCount);
 
-  Coloring GetColoring(const UndirectedGraph& graph);
+  std::optional<Coloring> GetColoring(const UndirectedGraph& graph);
 
   size_t GetLastRunIterationCount() const;
 
@@ -34,4 +35,5 @@ private:
   TwoSATSolver twoSAT_solver_;
   RandomValuesGenerator random_engine_;
   size_t iteration_count_;
+  size_t max_iteration_count_;
 };

@@ -1,19 +1,21 @@
 #include "randomized_3coloring_algo.h"
 
-Randomized3ColoringAlgo::Randomized3ColoringAlgo()
-    : random_engine_("Randomized3ColoringAlgo") {}
+Randomized3ColoringAlgo::Randomized3ColoringAlgo(size_t max_iter_count)
+    : random_engine_("Randomized3ColoringAlgo"),
+      max_iteration_count_(max_iter_count) {}
 
 size_t Randomized3ColoringAlgo::GetLastRunIterationCount() const {
   return iteration_count_;
 }
 
-Coloring Randomized3ColoringAlgo::GetColoring(const UndirectedGraph& graph) {
-  for (iteration_count_ = 1; ; ++iteration_count_) {
+std::optional<Coloring> Randomized3ColoringAlgo::GetColoring(const UndirectedGraph& graph) {
+  for (iteration_count_ = 1; iteration_count_ <= max_iteration_count_; ++iteration_count_) {
     const auto coloring = DoIteration(graph);
     if (coloring.has_value()) {
-      return *coloring;
+      return coloring;
     }
   }
+  return {};
 }
 
 std::optional<Coloring> Randomized3ColoringAlgo::DoIteration(const UndirectedGraph& graph) {
