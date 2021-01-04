@@ -43,40 +43,50 @@ std::optional<CSPSolution> RandomizedCSPSolver::TryToSolveSCP(CSP<3, 2>& csp) {
   if (csp.GetConstraints().empty()) {
     return CSPSolution(csp.GetVariableCount(), 1);
   }
+  
   const auto random_constraint = random_engine_.GetRandomValueFrom(csp.GetConstraints());
   const auto first_var_constraint = random_constraint[0];
   const auto second_var_constraint = random_constraint[1];
   CSPSolutionConverters solution_converters;
+  
   if (first_var_constraint.variable == second_var_constraint.variable &&
       first_var_constraint.value != second_var_constraint.value) {
       csp.RemoveConstraints(Constraints{random_constraint});
       return TryToSolveSCP(csp);
   }
+  
   if (csp.GetAvailableValuesOf(first_var_constraint.variable).size() <= 2) {
     solution_converters.AddSolutionConverter(csp.ApplyEquivalentTransformTo(
         first_var_constraint.variable));
-  }  else if (csp.GetAvailableValuesOf(second_var_constraint.variable).size() <= 2) {
+  
+  } else if (csp.GetAvailableValuesOf(second_var_constraint.variable).size() <= 2) {
     solution_converters.AddSolutionConverter(csp.ApplyEquivalentTransformTo(
         second_var_constraint.variable));
+  
   } else {
     solution_converters.AddSolutionConverter(ReassignValuesToVariable(
         csp,
         second_var_constraint.variable,
         second_var_constraint.value,
         first_var_constraint.value));
+  
     ForbidRandomVariablesValues(
         csp,
         first_var_constraint.variable,
         second_var_constraint.variable,
         first_var_constraint.value);
+    
     solution_converters.AddSolutionConverter(csp.ApplyEquivalentTransformTo(
         first_var_constraint.variable));
+    
     if (!csp.AllVariablesHaveAvailableValue()) {
       return {};
     }
+    
     solution_converters.AddSolutionConverter(csp.ApplyEquivalentTransformTo(
         second_var_constraint.variable));
   }
+  
   auto solution = TryToSolveSCP(csp);
   if (solution.has_value()) {
     return solution_converters.Convert(std::move(*solution));
@@ -127,6 +137,7 @@ CSPSolutionConverter RandomizedCSPSolver::ReassignValuesToVariable(
     }
     return c2;
   };
+  
   auto reversed_value_converter = [value_converter](Value value) {
     for (Value possible_value = 1; possible_value <= 3; ++possible_value) {
       if (value_converter(possible_value) == value) {
@@ -134,6 +145,7 @@ CSPSolutionConverter RandomizedCSPSolver::ReassignValuesToVariable(
       }
     }
   };
+  
   CSPSolutionConverter solution_converter{
       [reassigning_variable, reversed_value_converter](Variable var, const CSPSolution &csp_solution) {
         if (var != reassigning_variable) {
@@ -142,6 +154,7 @@ CSPSolutionConverter RandomizedCSPSolver::ReassignValuesToVariable(
         return reversed_value_converter(csp_solution[var]);
       }
   };
+  
   Constraints constraints = csp.GetConstraintsContain(reassigning_variable);
   csp.RemoveConstraints(constraints);
   for (auto constraint : constraints) {
